@@ -1,0 +1,6 @@
+source "https://api.berkshelf.com"
+
+cookbook 'selinux'
+cookbook 'yum-epel'
+cookbook 'yum-remi'
+cookbook 'nginx-repo'

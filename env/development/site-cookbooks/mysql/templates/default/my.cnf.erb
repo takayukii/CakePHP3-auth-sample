@@ -1,0 +1,31 @@
+[mysqld]
+# data 
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+
+# links
+symbolic-links=0
+
+# account
+user=mysql
+
+# timestamp
+explicit_defaults_for_timestamp=true
+
+# charcter set
+default-storage-engine=InnoDB
+character-set-server=utf8
+
+# log
+#general_log=1
+#general_log_file=/var/log/mysql-query.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql-slow.log
+long_query_time = 1.0
+
+[mysqld_safe]
+log-error=/var/log/mysqld.log
+pid-file=/var/run/mysqld/mysqld.pid
+
+# charcter set
+character-set-server=utf8

@@ -1,0 +1,17 @@
+DEPENDENCIES
+  nginx-repo
+  selinux
+  yum-epel
+  yum-remi
+
+GRAPH
+  apt (2.8.2)
+  nginx-repo (0.1.2)
+    apt (~> 2.8)
+    yum (~> 3.6)
+  selinux (0.9.0)
+  yum (3.7.1)
+  yum-epel (0.6.2)
+    yum (~> 3.2)
+  yum-remi (0.1.0)
+    yum (>= 0.0.0)
