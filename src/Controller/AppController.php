@@ -15,6 +15,7 @@
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use Cake\Event\Event;
 
 /**
  * Application Controller
@@ -42,5 +43,46 @@ class AppController extends Controller
     {
         parent::initialize();
         $this->loadComponent('Flash');
+        $this->loadComponent('Cookie');
+        $this->loadComponent('Auth', [
+            'loginAction' => [
+                'controller' => 'Users',
+                'action' => 'login',
+            ],
+            'authError' => 'Did you really think you are allowed to see that?',
+            'authenticate' => [
+                'Form' => [
+                    'fields' => ['username' => 'name']
+                ]
+            ],
+            'passwordHasher' => [
+                'className' => 'Default',
+            ],
+            'loginRedirect' => '/users'
+        ]);
     }
+
+    function beforeFilter(Event $event)
+    {
+        $isAuthenticated = !empty($this->Auth->user());
+        if(!$isAuthenticated){
+            $this->Cookie->config([
+                'domain' => '.example.com',
+                'encryption' => false
+            ]);
+            $sessionId = $this->Cookie->read('SESSID');
+            $isSessionFound = !empty($sessionId);
+            
+            if($isSessionFound){
+                if($sessionId !== $this->request->session()->id()){
+
+                    // ブラウザセッションのCakePHPのセッションにSESSIDを設定しリダイレクトすることで自動ログインする
+                    $this->request->session()->id($sessionId);
+                    $this->redirect($this->request->url);
+
+                }
+            }
+        }
+    }
+
 }
