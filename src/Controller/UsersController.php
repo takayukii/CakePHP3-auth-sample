@@ -149,6 +149,9 @@ class UsersController extends AppController
                     ]);
                     $this->Cookie->write('AUTOLOGIN', $this->request->session()->id());
                     $this->Cookie->write('AUTOLOGIN-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+                }else{
+                    $this->Cookie->delete('AUTOLOGIN');
+                    $this->Cookie->delete('AUTOLOGIN-EXPIRY');
                 }
                 
                 $this->Flash->success(__('The user has been logged in.'));
