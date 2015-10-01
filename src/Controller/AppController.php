@@ -65,6 +65,15 @@ class AppController extends Controller
 
     function beforeFilter(Event $event)
     {
+        // $testVal = $this->request->session()->read('testKey');
+        // if($testVal){
+        //     $testVal = $testVal + 1;
+        // }else{
+        //     $testVal = 1;
+        // }
+        // $this->request->session()->write('testKey', $testVal);
+        // debug($testVal);
+
         $this->Cookie->config([
             'domain' => '.example.com',
             'encryption' => false
