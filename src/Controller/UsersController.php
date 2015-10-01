@@ -5,6 +5,7 @@ use App\Controller\AppController;
 use Cake\Utility\Security;
 use Cake\Auth\DefaultPasswordHasher;
 use Cake\Core\Configure;
+use DateTime;
 
 /**
  * Users Controller
@@ -137,19 +138,19 @@ class UsersController extends AppController
                 $this->Auth->setUser($user);
 
                 $isSaveCookie = $this->request->data['remember_me'] == 1;
-                $cookieLifeTime = 0;
                 if($isSaveCookie){
-                    $cookieLifeTime = '+ 1day'; 
+
+                    $cookieLifeTime = (new DateTime())->modify('+2 weeks');
+                    $this->Cookie->config([
+                        'domain' => '.example.com',
+                        'encryption' => false,
+                        'expires' => $cookieLifeTime,
+                        'httpOnly' => true
+                    ]);
+                    $this->Cookie->write('AUTOLOGIN', $this->request->session()->id());
+                    $this->Cookie->write('AUTOLOGIN-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
                 }
-
-                $this->Cookie->config([
-                    'domain' => '.example.com',
-                    'encryption' => false,
-                    'expires' => $cookieLifeTime,
-                    'httpOnly' => true
-                ]);
-                $this->Cookie->write('SESSID', $this->request->session()->id());
-
+                
                 $this->Flash->success(__('The user has been logged in.'));
                 $this->redirect($this->Auth->redirectUrl());
 

@@ -16,6 +16,7 @@ namespace App\Controller;
 
 use Cake\Controller\Controller;
 use Cake\Event\Event;
+use DateTime;
 
 /**
  * Application Controller
@@ -64,24 +65,48 @@ class AppController extends Controller
 
     function beforeFilter(Event $event)
     {
-        $isAuthenticated = !empty($this->Auth->user());
-        if(!$isAuthenticated){
-            $this->Cookie->config([
-                'domain' => '.example.com',
-                'encryption' => false
-            ]);
-            $sessionId = $this->Cookie->read('SESSID');
-            $isSessionFound = !empty($sessionId);
-            
-            if($isSessionFound){
-                if($sessionId !== $this->request->session()->id()){
+        $this->Cookie->config([
+            'domain' => '.example.com',
+            'encryption' => false
+        ]);
 
-                    // ブラウザセッションのCakePHPのセッションにSESSIDを設定しリダイレクトすることで自動ログインする
-                    $this->request->session()->id($sessionId);
+        $isAuthenticated = !empty($this->Auth->user());
+
+        if($isAuthenticated){
+
+            $this->request->session()->renew();
+
+            $cookieExpiry = $this->Cookie->read('AUTOLOGIN-EXPIRY');
+            $hasAutoLogin = !empty($cookieExpiry);
+
+            if($hasAutoLogin){
+                $cookieLifeTime = new DateTime($cookieExpiry);
+
+                $this->Cookie->config([
+                    'domain' => '.example.com',
+                    'encryption' => false,
+                    'expires' => $cookieLifeTime,
+                    'httpOnly' => true
+                ]);
+                $this->Cookie->write('AUTOLOGIN', $this->request->session()->id());
+                $this->Cookie->write('AUTOLOGIN-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+            }
+
+        }else{
+
+            $autoLoginSessionId = $this->Cookie->read('AUTOLOGIN');
+            $isAutoLoginFound = !empty($autoLoginSessionId);
+            
+            if($isAutoLoginFound){
+                if($autoLoginSessionId !== $this->request->session()->id()){
+
+                    // ブラウザセッションのCakePHPのセッションにAUTOLOGINを設定しリダイレクトすることで自動ログインする
+                    $this->request->session()->id($autoLoginSessionId);
                     $this->redirect($this->request->url);
 
                 }
             }
+
         }
     }
 
