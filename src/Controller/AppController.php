@@ -65,6 +65,8 @@ class AppController extends Controller
 
     function beforeFilter(Event $event)
     {
+        // セッションを書き換えても値が引き継がれるか確認 -> OK
+
         // $testVal = $this->request->session()->read('testKey');
         // if($testVal){
         //     $testVal = $testVal + 1;
@@ -85,32 +87,38 @@ class AppController extends Controller
 
             $this->request->session()->renew();
 
-            $cookieExpiry = $this->Cookie->read('AUTOLOGIN-EXPIRY');
-            $hasAutoLogin = !empty($cookieExpiry);
+            $cookieExpiry = $this->Cookie->read('SSOSID-EXPIRY');
+            $isPersistentCookie = !empty($cookieExpiry);
 
-            if($hasAutoLogin){
+            if($isPersistentCookie){
                 $cookieLifeTime = new DateTime($cookieExpiry);
-
                 $this->Cookie->config([
                     'domain' => '.example.com',
                     'encryption' => false,
                     'expires' => $cookieLifeTime,
                     'httpOnly' => true
                 ]);
-                $this->Cookie->write('AUTOLOGIN', $this->request->session()->id());
-                $this->Cookie->write('AUTOLOGIN-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+                $this->Cookie->write('SSOSID-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+            }else{
+                $this->Cookie->config([
+                    'domain' => '.example.com',
+                    'encryption' => false,
+                    'expires' => 0,
+                    'httpOnly' => true
+                ]);
             }
+            $this->Cookie->write('SSOSID', $this->request->session()->id());
 
         }else{
 
-            $autoLoginSessionId = $this->Cookie->read('AUTOLOGIN');
-            $isAutoLoginFound = !empty($autoLoginSessionId);
+            $ssoSessionId = $this->Cookie->read('SSOSID');
+            $isSsoSessionIdFound = !empty($ssoSessionId);
             
-            if($isAutoLoginFound){
-                if($autoLoginSessionId !== $this->request->session()->id()){
+            if($isSsoSessionIdFound){
+                if($ssoSessionId !== $this->request->session()->id()){
 
-                    // ブラウザセッションのCakePHPのセッションにAUTOLOGINを設定しリダイレクトすることで自動ログインする
-                    $this->request->session()->id($autoLoginSessionId);
+                    // ブラウザセッションのCakePHPのセッションにSSOSIDを設定しリダイレクトすることで自動ログインする
+                    $this->request->session()->id($ssoSessionId);
                     $this->redirect($this->request->url);
 
                 }

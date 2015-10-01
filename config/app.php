@@ -322,7 +322,7 @@ return [
      * To use database sessions, load the SQL file located at config/Schema/sessions.sql
      */
     'Session' => [
-        'cookie' => 'SSESSID',
+        'cookie' => 'REALSSID',
         'defaults' => 'database',
         'timeout' => 60 * 24 * 90, // unit: minute, 90 days
         'autoRegenerate' => true,

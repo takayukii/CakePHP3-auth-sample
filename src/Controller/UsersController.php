@@ -147,12 +147,17 @@ class UsersController extends AppController
                         'expires' => $cookieLifeTime,
                         'httpOnly' => true
                     ]);
-                    $this->Cookie->write('AUTOLOGIN', $this->request->session()->id());
-                    $this->Cookie->write('AUTOLOGIN-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+                    $this->Cookie->write('SSOSID-EXPIRY', $cookieLifeTime->format('Y-m-d H:i:s'));
+
                 }else{
-                    $this->Cookie->delete('AUTOLOGIN');
-                    $this->Cookie->delete('AUTOLOGIN-EXPIRY');
+                    $this->Cookie->config([
+                        'domain' => '.example.com',
+                        'encryption' => false,
+                        'expires' => 0,
+                        'httpOnly' => true
+                    ]);
                 }
+                $this->Cookie->write('SSOSID', $this->request->session()->id());
                 
                 $this->Flash->success(__('The user has been logged in.'));
                 $this->redirect($this->Auth->redirectUrl());
