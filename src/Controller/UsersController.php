@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Core\Exception\Exception;
 use Cake\Utility\Security;
 use Cake\Auth\DefaultPasswordHasher;
 use Cake\Core\Configure;
@@ -18,7 +19,7 @@ class UsersController extends AppController
     public function initialize()
     {
         parent::initialize();
-        $this->Auth->allow('add', 'edit');
+        $this->Auth->allow(['add', 'checkAuth']);
     }
 
     /**
@@ -128,7 +129,17 @@ class UsersController extends AppController
      */
     public function login()
     {
-        if ($this->request->is('post')) {
+        if ($this->request->is('get')) {
+
+//            $redirectUrl = $this->request->query('redirect');
+//            $this->request->session()->write('redirect', $redirectUrl);
+//
+//            $level = $this->request->query('level');
+//            if(!empty($level)){
+//                $this->request->session()->write('level', $level);
+//            }
+
+        } else if ($this->request->is('post')) {
 
             $user = $this->Auth->identify();
             $isLoginSuccess = !empty($user);
@@ -158,9 +169,23 @@ class UsersController extends AppController
                     ]);
                 }
                 $this->Cookie->write('SSOSID', $this->request->session()->id());
-                
+
                 $this->Flash->success(__('The user has been logged in.'));
-                $this->redirect($this->Auth->redirectUrl());
+
+                $redirectUrl = $this->request->query('redirect');
+                $level = $this->request->query('level');
+                if(empty($level)){
+                    $level = 1;
+                }
+
+                $this->request->session()->write('authLevel', $level);
+
+                $hasRedirectUrl = !empty($redirectUrl);
+                if($hasRedirectUrl){
+                    $this->redirect($redirectUrl);
+                }else{
+                    $this->redirect($this->Auth->redirectUrl());
+                }
 
             }else{
 
@@ -169,5 +194,52 @@ class UsersController extends AppController
             }
 
         }
+    }
+
+    /**
+     *
+     */
+    public function checkAuth(){
+
+        $this->log(__METHOD__.' called', LOG_DEBUG);
+
+        $this->viewClass = 'Json';
+        $level = $this->request->query('level');
+
+        if(empty($level)){
+            $level = 1;
+        }
+
+        try{
+
+            $isAuthenticated = !empty($this->Auth->user());
+
+            if(!$isAuthenticated){
+                throw new Exception('not auth');
+            }
+
+            $authLevel = $this->request->session()->read('authLevel');
+            $isSatisfyAuthLevel = $authLevel >= $level;
+
+            if(!$isSatisfyAuthLevel){
+                throw new Exception('not statisfy level');
+            }
+
+            $this->set([
+                'auth' => $this->Auth->user(),
+                '_serialize' => ['auth']
+            ]);
+
+
+        }catch(Exception $e) {
+
+            $this->response->statusCode(403);
+            $this->set([
+                'error' => $e->getMessage(),
+                '_serialize' => ['error']
+            ]);
+
+        }
+
     }
 }

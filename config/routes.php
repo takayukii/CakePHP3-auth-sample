@@ -40,6 +40,7 @@ use Cake\Routing\Router;
  *
  */
 Router::defaultRouteClass('Route');
+Router::extensions(['json']);
 
 Router::scope('/', function ($routes) {
     /**
@@ -53,6 +54,11 @@ Router::scope('/', function ($routes) {
      * ...and connect the rest of 'Pages' controller's URLs.
      */
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
+
+    /**
+     * Custom REST API
+     */
+    $routes->connect('/users/auth-check', ['controller' => 'Users', 'action' => 'checkAuth']);
 
     /**
      * Connect catchall routes for all controllers.

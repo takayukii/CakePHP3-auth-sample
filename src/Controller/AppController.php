@@ -32,7 +32,7 @@ class AppController extends Controller
      * smarty class
      */
     public $viewClass = 'App\View\SmartyView';
-    
+
     /**
      * Initialization hook method.
      *
@@ -61,6 +61,7 @@ class AppController extends Controller
             ],
             'loginRedirect' => '/users'
         ]);
+        $this->loadComponent('RequestHandler');
     }
 
     function beforeFilter(Event $event)
@@ -102,8 +103,8 @@ class AppController extends Controller
             }else{
                 $this->Cookie->config([
                     'domain' => '.example.com',
-                    'encryption' => false,
                     'expires' => 0,
+                    'encryption' => false,
                     'httpOnly' => true
                 ]);
             }
@@ -113,7 +114,7 @@ class AppController extends Controller
 
             $ssoSessionId = $this->Cookie->read('SSOSID');
             $isSsoSessionIdFound = !empty($ssoSessionId);
-            
+
             if($isSsoSessionIdFound){
                 if($ssoSessionId !== $this->request->session()->id()){
 
